@@ -80,6 +80,10 @@ class Config:
         return os.environ.get("JOBBOT_PROFILE") or self.raw.get("profile", "")
 
     @property
+    def only_direct(self) -> bool:
+        return bool(self.raw.get("only_direct", True))
+
+    @property
     def templates(self) -> dict:
         return self.raw.get("templates") or {}
 

@@ -26,7 +26,9 @@ from .webreader import ChannelUnavailable, WebReader
 
 log = logging.getLogger(__name__)
 
-REGIONS = {"georgia": "🇬🇪 Грузия", "ru": "🇷🇺 РФ/СНГ", "eu_remote": "🇪🇺 Европа/удалёнка"}
+REGIONS = {"georgia": "🇬🇪 Грузия", "ru": "🇷🇺 РФ/СНГ", "eu_remote": "🇪🇺 Европа/удалёнка",
+           "design": "🎨 Дизайн", "product": "📦 Продукт", "freelance": "💼 Фриланс",
+           "abroad": "🌍 Релокация и зарубеж", "web3": "🪙 Web3 и геймдев"}
 
 
 async def safe_answer(cb, text: str | None = None) -> None:
@@ -257,6 +259,8 @@ class JobBot:
             name = await sender_lookup()
             if name:
                 contacts.telegram.append(name)
+        if self.cfg.only_direct and not contacts.primary_tg:
+            return False  # нельзя написать человеку в Telegram напрямую — не присылаем
 
         lang = detect_lang(text)
         letter = await self.writer.write(text, lang)

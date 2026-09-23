@@ -71,22 +71,33 @@ class DB:
         self.conn = sqlite3.connect(path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
+        try:  # миграция: каналы, добавленные вручную через /add, не трогаем при синхронизации с config.yaml
+            self.conn.execute("ALTER TABLE channels ADD COLUMN manual INTEGER NOT NULL DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass
         self.conn.commit()
 
     # ── каналы ────────────────────────────────────────────
     def sync_channels(self, channels: dict[str, list[str]]) -> None:
+        """Каналы из config.yaml включены, остальные (кроме добавленных вручную) — выключены."""
+        names_all = []
         for region, names in channels.items():
             for name in names:
                 name = name.lstrip("@").strip()
+                names_all.append(name.lower())
                 self.conn.execute(
                     "INSERT INTO channels(username, region) VALUES(?, ?) "
                     "ON CONFLICT(username) DO UPDATE SET region=excluded.region", (name, region))
+        if names_all:
+            marks = ",".join("?" * len(names_all))
+            self.conn.execute(f"UPDATE channels SET enabled=0 WHERE manual=0 AND lower(username) NOT IN ({marks})",
+                              names_all)
         self.conn.commit()
 
     def add_channel(self, username: str, region: str) -> None:
         self.conn.execute(
-            "INSERT INTO channels(username, region, enabled) VALUES(?, ?, 1) "
-            "ON CONFLICT(username) DO UPDATE SET region=excluded.region, enabled=1, error=NULL",
+            "INSERT INTO channels(username, region, enabled, manual) VALUES(?, ?, 1, 1) "
+            "ON CONFLICT(username) DO UPDATE SET region=excluded.region, enabled=1, manual=1, error=NULL",
             (username.lstrip("@"), region))
         self.conn.commit()
 
