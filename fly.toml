@@ -1,0 +1,16 @@
+# fly.io: fly launch --no-deploy → fly volumes create jobbot_data --size 1 → fly secrets set ... → fly deploy
+app = "jobbot-chsts"
+primary_region = "waw"
+
+[build]
+
+[env]
+  DATA_DIR = "/data"
+
+[[mounts]]
+  source = "jobbot_data"
+  destination = "/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

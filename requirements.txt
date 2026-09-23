@@ -1,0 +1,5 @@
+aiogram>=3.7
+anthropic>=0.40
+pyyaml>=6.0
+beautifulsoup4>=4.12
+telethon>=1.36

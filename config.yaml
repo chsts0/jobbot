@@ -1,0 +1,107 @@
+# ─────────────────────────────────────────────────────────────
+#  JobBot — настройки. Ключи и токены НЕ здесь, а в файле .env
+# ─────────────────────────────────────────────────────────────
+
+# Как часто проверять каналы (минуты) и насколько далеко смотреть назад при первом запуске (часы)
+poll_minutes: 10              # только для постоянного режима; на GitHub частоту задаёт .github/workflows/jobbot.yml
+backfill_hours: 24
+
+# Лимиты, чтобы Telegram не счёл тебя спамером
+limits:
+  max_sends_per_day: 15        # не больше N откликов в сутки
+  min_delay_seconds: 90        # пауза между отправками
+  same_contact_days: 30        # одному и тому же человеку — не чаще раза в 30 дней
+
+# Портфолио: файл прикладывается к отклику, ссылка вставляется в текст
+portfolio_pdf: Chekalin_Stanislav_Portfolio.pdf
+portfolio_link: https://drive.google.com/drive/folders/138mP0UZtt85P45d49valBj7Jx0eXCbRH
+send_pdf: true                 # false — отправлять только текст со ссылкой
+
+# Текст отклика. {role} — должность из вакансии (или «дизайнера», если не нашлась), {portfolio_link} — ссылка выше.
+# Правь как хочешь, после правки перезапусти бота.
+templates:
+  ru: |
+    Здравствуйте! Пишу по поводу вакансии{role}. Я продуктовый дизайнер, портфолио и резюме здесь: {portfolio_link}
+    Буду рад пообщаться.
+  en: |
+    Hi! I'm reaching out about the{role} position. I'm a product designer, my portfolio and CV are here: {portfolio_link}
+    Happy to chat.
+
+# Нейросеть для писем выключена: короткий шаблон выше выглядит естественнее
+llm:
+  enabled: false
+  model: claude-sonnet-4-5
+
+# Минимальный балл вакансии, чтобы она пришла тебе (см. README, раздел «Как бот оценивает»)
+min_score: 3
+
+# Факты о тебе для нейросети (нужны, только если включишь llm). На GitHub держи их в секрете JOBBOT_PROFILE.
+profile: ""
+
+# Ключевые слова. Регистр не важен, это регулярные выражения
+keywords:
+  # хотя бы одно из этих должно быть в посте
+  must: ['дизайнер', 'designer', 'ui/ux', 'ux/ui', '\bux\b', '\bui\b', 'figma', 'фигм', 'product design', 'продуктов\w* дизайн']
+  # плюсы к оценке
+  plus:
+    'product designer|продуктов\w* дизайнер': 3
+    'ui/ux|ux/ui|\bux\b|веб-дизайн|web design|интерфейс': 2
+    'лендинг|landing|сайт|website|брендинг|brand|айдентик': 1
+    'figma|фигм': 1
+    'удал[её]нн|remote|релокац|relocat|hybrid|гибрид': 1
+    'тбилиси|tbilisi|грузи|georgia|батуми': 2
+    'fintech|финтех|e-?commerce|real estate|недвижим|saas': 1
+  # если есть что-то из этого — пост выкидывается
+  stop: ['маникюр', 'ногт', 'интерьер', 'ландшафт', 'дизайнер одежды', 'fashion', 'wildberries', '\bwb\b', 'ozon',
+         'маркетплейс', 'инфографик', 'карточк\w* товар', 'моушн', 'motion', '\b3d\b', 'визажист', 'флорист',
+         'стажёр без оплаты', 'unpaid', '#резюме', '#ищуработу', 'ищу работу', 'looking for a job', 'open to work',
+         'геймдизайнер', 'game designer', 'дизайнер упаковки', 'полиграф']
+  # минусы к оценке (не выкидывают, но опускают вниз)
+  minus:
+    'иллюстратор|illustrator(?! ?,)|рисован': 1
+    'senior|lead|head of|руководител|арт-директор|art director': 1
+    'junior|джун|стаж[её]р|intern': 1
+    'офис в москве|только офис|office only|onsite only': 2
+
+# Каналы и чаты (публичные, по @имени). Регион — просто пометка в карточке.
+# Язык письма бот выбирает сам по языку вакансии. Недоступные каналы бот выключает сам — см. /channels
+# Все каналы ниже проверены 23.09.2026: у них открыт веб-просмотр t.me/s/…, и они живые.
+# Грузинские ЧАТЫ (Tbilisi_IT, jobs_ge, job_georgia, designjamtbilisi…) через веб не читаются —
+# их можно вернуть, когда появятся ключи my.telegram.org (полный режим).
+channels:
+  georgia:
+    - gruziatbi_vakansii
+    - gruziabat_vakansii
+    - itjobs_ge
+    - relocation_georgia
+  ru:
+    - fordesigner
+    - design_careers
+    - designwork_vacansii
+    - design_vacancy
+    - designer_ru
+    - designer_ru_work
+    - designhunters
+    - jun_hi_vacancies
+    - workindesign
+    - jobs_designglory
+    - uiux_jobs_resumes
+    - uxwork
+    - zakaz_design
+    - Visionisland
+    - InclusiveVacancy
+    - it_vakansii_jobs
+  eu_remote:
+    - evacuatejobs
+    - Relocats
+    - young_relocate
+    - theyseeku_it
+    - theyseeku
+    - rusukrjobs
+    - jobsincyprus
+    - cyithr
+    - youritjob
+    - montenegro_it_jobs
+    - remotejobss
+    - remoteit
+    - digitalbroccoli
