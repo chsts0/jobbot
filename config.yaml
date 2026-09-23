@@ -32,6 +32,9 @@ llm:
   enabled: false
   model: claude-sonnet-4-5
 
+# Присылать только вакансии, где можно сразу написать человеку в Telegram (@ник или ссылка t.me)
+only_direct: true
+
 # Минимальный балл вакансии, чтобы она пришла тебе (см. README, раздел «Как бот оценивает»)
 min_score: 3
 
@@ -63,45 +66,82 @@ keywords:
     'junior|джун|стаж[её]р|intern': 1
     'офис в москве|только офис|office only|onsite only': 2
 
-# Каналы и чаты (публичные, по @имени). Регион — просто пометка в карточке.
-# Язык письма бот выбирает сам по языку вакансии. Недоступные каналы бот выключает сам — см. /channels
-# Все каналы ниже проверены 23.09.2026: у них открыт веб-просмотр t.me/s/…, и они живые.
-# Грузинские ЧАТЫ (Tbilisi_IT, jobs_ge, job_georgia, designjamtbilisi…) через веб не читаются —
-# их можно вернуть, когда появятся ключи my.telegram.org (полный режим).
+# Каналы (публичные, по @имени). Проверены 23.09.2026: живые, с веб-просмотром t.me/s/…,
+# и в них регулярно бывают дизайнерские вакансии. Регион — просто пометка в карточке.
 channels:
-  georgia:
-    - gruziatbi_vakansii
-    - gruziabat_vakansii
-    - itjobs_ge
-    - relocation_georgia
-  ru:
-    - fordesigner
-    - design_careers
-    - designwork_vacansii
-    - design_vacancy
-    - designer_ru
-    - designer_ru_work
-    - designhunters
-    - jun_hi_vacancies
-    - workindesign
-    - jobs_designglory
-    - uiux_jobs_resumes
-    - uxwork
-    - zakaz_design
+  design:
     - Visionisland
-    - InclusiveVacancy
+    - zakaz_design
+    - Designs_job
+    - designer_vacancies
+    - design_vacancy
+    - jun_hi_vacancies
+    - design_careers
+    - vakansii_design
+    - designwork_vacansii
+    - junior_designers
+    - webdesign_jobs
+    - takoyfreelance
+    - uiux_jobs_resumes
+    - design_jobs_uxui
+    - workindesign
+    - fordesigner
+    - designer_ru
+    - uxwork
+    - cgfreelance
+    - designer_ru_work
+    - designer_work
+    - designodromo
+    - designhunters
+    - designbirzha
+    - dsgnworkers
+    - jun_jobs
+    - vsedizaineri
+    - ux_jobs
+    - bbe_jobs
+  product:
+    - product_jobs
+    - productjobgo
+    - hireproproduct
+    - hh_vacancy_product_project
     - it_vakansii_jobs
-  eu_remote:
-    - evacuatejobs
-    - Relocats
+    - workasap
+    - huggabletalents
+    - honeyiwantmoney
+    - theblueprintcareer
+    - vacanciesrus
+    - jobs_juniors_remote
+    - job_webdev
+  freelance:
+    - Koteyka_Freelancer
+    - freelancce
+    - itfreelancers
+    - workk_on
+    - webfrl
+    - uvetrovoi
+    - frilancekomfort
+    - remote_w0rk
+    - frilans_na_legke
+    - proffreelancee
+  abroad:
     - young_relocate
-    - theyseeku_it
-    - theyseeku
-    - rusukrjobs
-    - jobsincyprus
-    - cyithr
-    - youritjob
+    - remote_jobs_relocate
+    - zarubezhom_jobs
+    - sea_relocation
+    - brain_drain_ru
+    - noborders_forwomen
+    - choicy_work
+    - networkio_io
     - montenegro_it_jobs
-    - remotejobss
-    - remoteit
-    - digitalbroccoli
+    - jobs_inarmenia
+    - workitkz
+    - devkz_jobs
+    - jobkz_1
+    - it_jobs_kz
+  web3:
+    - job_web3
+    - opento_crypto
+    - cryptoheadhunter
+    - gamedevjobs
+    - rabota_v_gamedeve
+    - forgamedev
