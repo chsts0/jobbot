@@ -336,6 +336,9 @@ class JobBot:
         try:
             if not self.owner_id:
                 return  # карточка останется в базе и придёт после /start
+            if self.lite:
+                await self._send_lite_card(v)
+                return
             card = await self.bot.send_message(self.owner_id, self._card_text(v), disable_web_page_preview=True)
             try:
                 letter = await self.bot.send_message(self.owner_id, self._letter_text(v),
@@ -352,6 +355,28 @@ class JobBot:
             self.db.update(vid, card_msg_id=card.message_id, letter_msg_id=letter.message_id)
         except TelegramForbiddenError:
             log.error("Бот не может тебе писать — открой бота в Telegram и нажми /start")
+
+    def _lite_keyboard(self, v: Vacancy) -> InlineKeyboardMarkup:
+        rows = []
+        if v.contact_tg:
+            rows.append([InlineKeyboardButton(text=f"✍️ Написать @{v.contact_tg}", url=self.write_url(v))])
+        rows.append([InlineKeyboardButton(text="🔗 Открыть вакансию", url=v.link)])
+        return InlineKeyboardMarkup(inline_keyboard=rows)
+
+    async def _send_lite_card(self, v: Vacancy) -> None:
+        """Лёгкий режим: одно сообщение — текст вакансии и две кнопки."""
+        text = esc(v.text if len(v.text) <= 3500 else v.text[:3500] + "…")
+        try:
+            msg = await self.bot.send_message(self.owner_id, text, reply_markup=self._lite_keyboard(v),
+                                              disable_web_page_preview=True)
+        except TelegramBadRequest:
+            self.prefill_ok = False  # письмо не влезло в ссылку — кнопка просто откроет чат
+            try:
+                msg = await self.bot.send_message(self.owner_id, text, reply_markup=self._lite_keyboard(v),
+                                                  disable_web_page_preview=True)
+            finally:
+                self.prefill_ok = True
+        self.db.update(v.id, card_msg_id=msg.message_id, letter_msg_id=msg.message_id)
 
     async def refresh_letter(self, v: Vacancy, note: str = "", keyboard: bool = True) -> None:
         if not v.letter_msg_id:
