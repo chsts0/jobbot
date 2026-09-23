@@ -2,7 +2,7 @@ name: jobbot
 
 on:
   schedule:
-    - cron: "*/5 * * * *"    # каждые 5 минут — чаще GitHub не разрешает (и может задерживать запуски)
+    - cron: "*/15 * * * *"   # перезапуск; каждый запуск сам работает ~50 минут, так что бот почти всегда онлайн
   workflow_dispatch: {}       # кнопка «Run workflow» — запустить вручную
 
 concurrency:
@@ -12,7 +12,7 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 58
     steps:
       - uses: actions/checkout@v4
 
@@ -41,7 +41,7 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           JOBBOT_PROFILE: ${{ secrets.JOBBOT_PROFILE }}
-        run: python main.py --once
+        run: python main.py --for 50
 
       - name: Save state
         if: always()
