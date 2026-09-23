@@ -103,6 +103,25 @@ class JobBot:
         finally:
             await self.close()
 
+    async def run_for(self, minutes: float, scan_every: float = 3) -> None:
+        """Режим GitHub Actions: работаем `minutes` минут — сразу отвечаем в боте и проверяем каналы
+        каждые `scan_every` минут, потом аккуратно выходим (следующий запуск подхватит)."""
+        bot_me = await self._connect()
+        await self._autostart(bot_me)
+        deadline = time.monotonic() + minutes * 60
+        next_scan = 0.0
+        try:
+            while time.monotonic() < deadline:
+                if time.monotonic() >= next_scan:
+                    if self.db.get_flag("paused") != "1":
+                        found = await self.scan_all()
+                        log.info("Проход завершён, новых подходящих: %s", found)
+                    next_scan = time.monotonic() + scan_every * 60
+                left = min(next_scan, deadline) - time.monotonic()
+                await self.process_pending_updates(wait=max(1, min(25, int(left))))
+        finally:
+            await self.close()
+
     async def close(self) -> None:
         await self.bot.session.close()
         if self.client:
@@ -110,14 +129,21 @@ class JobBot:
         if self.web:
             await self.web.close()
 
-    async def process_pending_updates(self) -> None:
-        """Забирает накопившиеся нажатия и сообщения из бота-пульта и обрабатывает их по очереди."""
+    async def process_pending_updates(self, wait: int = 0) -> None:
+        """Забирает накопившиеся нажатия и сообщения из бота-пульта и обрабатывает их по очереди.
+        wait > 0 — ждать новые сообщения до wait секунд (long polling)."""
         offset = int(self.db.get_flag("upd_offset", "0") or 0)
         while True:
-            updates = await self.bot.get_updates(offset=offset or None, timeout=0, limit=100,
-                                                 allowed_updates=["message", "callback_query"])
+            try:
+                updates = await self.bot.get_updates(offset=offset or None, timeout=wait, limit=100,
+                                                     allowed_updates=["message", "callback_query"])
+            except Exception as e:
+                log.warning("getUpdates: %s", e)
+                await asyncio.sleep(3)
+                return
             if not updates:
                 break
+            wait = 0
             for u in updates:
                 try:
                     await self.dp.feed_update(self.bot, u)
