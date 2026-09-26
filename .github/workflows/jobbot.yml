@@ -2,17 +2,17 @@ name: jobbot
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # перезапуск; каждый запуск сам работает ~50 минут, так что бот почти всегда онлайн
+    - cron: "*/20 * * * *"   # держит следующий запуск в очереди: как только текущий закончится, он стартует через ~минуту
   workflow_dispatch: {}       # кнопка «Run workflow» — запустить вручную
 
 concurrency:
-  group: jobbot               # два запуска одновременно не пойдут — второй подождёт
+  group: jobbot               # два запуска одновременно не пойдут — второй ждёт в очереди и стартует сразу после первого
   cancel-in-progress: false
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 58
+    timeout-minutes: 358       # максимум GitHub — 6 часов
     steps:
       - uses: actions/checkout@v4
 
@@ -41,7 +41,7 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           JOBBOT_PROFILE: ${{ secrets.JOBBOT_PROFILE }}
-        run: python main.py --for 50
+        run: python main.py --for 345   # ~5 ч 45 мин, потом выходим и сохраняем базу
 
       - name: Save state
         if: always()
